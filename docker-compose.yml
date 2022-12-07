@@ -1,0 +1,82 @@
+version: "3.9"
+
+
+services:
+
+  _base: &base
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: []
+    volumes:
+      - .:/code
+    environment: &base-environment
+      ENVIRONMENT: local
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/dev
+
+  app: &app
+    <<: *base
+    ports:
+      - "8009:8009"
+    entrypoint: ['docker/start.sh']
+    depends_on:
+      - db
+
+  db:
+    image: postgres:11-alpine
+    ports:
+      - "6544:6543"
+    environment: &db-environment
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: dev
+      POSTGRES_PORT: 5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  test: &test
+    <<: *base
+    environment:
+      <<: *base-environment
+      DATABASE_URL: postgresql://postgres:postgres@db-test:5432/dev
+    entrypoint: ["docker/test.sh"]
+    depends_on:
+      - db-test
+  db-test:
+    image: postgres:11-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      <<: *db-environment
+
+  lint:
+    <<: *base
+    entrypoint: ["docker/lint.sh"]
+
+  alembic:
+    <<: *base
+    depends_on:
+      - db
+    entrypoint: ["alembic"]
+
+  alembic-autogenerate:
+    <<: *base
+    depends_on:
+      - db
+    entrypoint: ["alembic", "revision", "--autogenerate", "-m"]
+
+  poetry:
+    <<: *base
+    entrypoint: ["poetry"]
+
+  lint:
+    <<: *base
+    entrypoint: ["docker/lint.sh"]
+
+  lint-check:
+    <<: *base
+    entrypoint: [ "docker/lint_check.sh" ]
+
+
+volumes:
+  pgdata:

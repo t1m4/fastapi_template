@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "recommendation_service"
+version = "0.1.0"
+description = ""
+authors = []
+
+[tool.poetry.dependencies]
+# WARN: keep python version in sync with python version in Dockerfile
+python = "^3.10"
+uvicorn = {extras = ["standard"], version = "^0.17.6"}
+fastapi = "^0.75.1"
+pydantic = {extras = ["dotenv"], version = "^1.9.0"}
+SQLAlchemy = "^1.4.34"
+psycopg2-binary = "^2.9.3"
+kafka-python = "^2.0.2"
+PyJWT = "^2.3.0"
+requests = "^2.27.1"
+typer = {extras = ["all"], version = "^0.6.1"}
+watchfiles = "^0.13"
+celery = {extras = ["pytest"], version = "^5.2.6"}
+redis = "^4.3.1"
+
+[tool.poetry.dev-dependencies]
+pip-tools = "^6.5.1"
+alembic = "^1.7.7"
+black = "^22.3.0"
+flake8 = "^4.0.1"
+mypy = "^0.942"
+isort = "^5.10.1"
+pytest = "^7.1.1"
+pydantic-factories = "^1.4.0"
+coverage = "^6.4.1"
+
+[tool.black]
+line-length = 120
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+exclude = 'app/migrations'
+strict = true
+# disable strict flags
+ignore_missing_imports = true
+disallow_subclassing_any = false
+warn_return_any = false
+ignore_errors = true
+
+
+[tool.coverage.report]
+omit = [
+    "*/tests/*",
+]
