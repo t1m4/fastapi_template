@@ -2,7 +2,8 @@ from http import HTTPStatus
 
 import pytest
 
-from tests.users.constants import USER_API, USERS_API
+from app.config import config
+from app.users.handlers import router
 from tests.users.factories import UserFactory
 
 
@@ -20,7 +21,8 @@ from tests.users.factories import UserFactory
     ],
 )
 def test_create_user(client, body, expected):
-    response = client.post(USERS_API, json=body)
+    url = config.BASE_API_PATH + router.url_path_for("create_user")
+    response = client.post(url, json=body)
     assert response.status_code == HTTPStatus.OK
     json_response = response.json()
     assert isinstance(json_response["id"], int)
@@ -35,8 +37,9 @@ def test_create_user(client, body, expected):
 
 def test_get_user(client):
     user = UserFactory.create()
+    url = config.BASE_API_PATH + router.url_path_for("get_user", id=str(user.id))
 
-    response = client.get(USER_API.format(id=user.id))
+    response = client.get(url)
     assert response.status_code == HTTPStatus.OK
     json_response = response.json()
     assert json_response == {
@@ -48,7 +51,8 @@ def test_get_user(client):
 
 
 def test_get_user_does_not_exist(client):
-    response = client.get(USER_API.format(id=1))
+    url = config.BASE_API_PATH + router.url_path_for("get_user", id="1")
+    response = client.get(url)
     assert response.status_code == HTTPStatus.NOT_FOUND
     json_response = response.json()
     assert json_response == {"message": "User doesn't exists"}
@@ -56,8 +60,9 @@ def test_get_user_does_not_exist(client):
 
 def test_get_users(client):
     user = UserFactory.create()
+    url = config.BASE_API_PATH + router.url_path_for("create_user")
 
-    response = client.get(USERS_API)
+    response = client.get(url)
     assert response.status_code == HTTPStatus.OK
     json_response = response.json()
     assert json_response == {
@@ -74,8 +79,9 @@ def test_get_users(client):
 
 def test_get_users_with_ids(client):
     user = UserFactory.create()
+    url = config.BASE_API_PATH + router.url_path_for("create_user")
 
-    response = client.get(USERS_API, params={"user_ids": user.id})
+    response = client.get(url, params={"user_ids": user.id})
     assert response.status_code == HTTPStatus.OK
     json_response = response.json()
     assert json_response == {
@@ -102,7 +108,8 @@ def test_get_users_with_ids(client):
 )
 def test_update_user(client, body, expected):
     user = UserFactory.create()
-    response = client.put(USER_API.format(id=user.id), json=body)
+    url = config.BASE_API_PATH + router.url_path_for("get_user", id=str(user.id))
+    response = client.put(url, json=body)
     assert response.status_code == HTTPStatus.OK
     json_response = response.json()
     assert isinstance(json_response["id"], int)
@@ -118,7 +125,8 @@ def test_update_user(client, body, expected):
 def test_update_user_with_exception(
     client,
 ):
-    response = client.put(USER_API.format(id=1), json={"fullname": "test"})
+    url = config.BASE_API_PATH + router.url_path_for("get_user", id="1")
+    response = client.put(url, json={"fullname": "test"})
     assert response.status_code == HTTPStatus.NOT_FOUND
     json_response = response.json()
     assert json_response == {"message": "User doesn't exists"}
