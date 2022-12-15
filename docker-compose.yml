@@ -49,10 +49,6 @@ services:
     environment:
       <<: *db-environment
 
-  lint:
-    <<: *base
-    entrypoint: ["docker/lint.sh"]
-
   alembic:
     <<: *base
     depends_on:
