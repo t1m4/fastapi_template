@@ -20,7 +20,7 @@ Each domain has 3 layers of abstraction:
 - pytest
 - Docker
 - Celery and Redis
-- Sentry(WIP)
+- Sentry
 - Kafka(WIP)
 
 

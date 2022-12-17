@@ -10,6 +10,7 @@ def create_app() -> FastAPI:
         docs_url=f"{config.BASE_API_PATH}/docs/ui",
     )
 
+    setup.setup_error_reporting()
     setup.setup_logging()
     setup.setup_error_handler(app)
     setup.setup_routes(app)
