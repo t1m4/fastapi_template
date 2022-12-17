@@ -19,28 +19,46 @@ Each domain has 3 layers of abstraction:
 - Commands: Typer 
 - pytest
 - Docker
-- Celery(WIP)
-- Kafka(WIP)
+- Celery and Redis
 - Sentry(WIP)
-- Pydantic add PostgresDsn(WIP)
+- Kafka(WIP)
 
 
-## Run project
+## Run application
+
+- Using docker-compose
+    ```shell
+    docker-compose up app
+    ```
+- Using local shell
+    
+    1. Create virtual environment
+        ```shell
+        poetry shell
+        ```
+    2. Install all dependencies
+        ```shell
+        poetry install
+        ```
+    3. Start application
+        ```shell
+        docker/start.sh
+        ```
+
+## Run worker
+ - Using docker-compose
+    ```shell
+    docker-compose up worker
+    ```
+## Run tests
+
+ - Using docker-compose
+    ```shell
+    docker-compose run --rm test
+    ```
 
 
-```shell
-docker-compose up app
-```
-
-
-### Run tests
-
-```shell
-docker-compose run --rm test
-```
-
-
-### Database migration
+## Database migration
 
 - autogenerate migration
 
@@ -61,7 +79,7 @@ docker-compose run --rm test
     ```
 
 
-### Run linters
+## Run linters
 - Run only check
 
     ```shell
