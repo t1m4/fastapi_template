@@ -7,11 +7,11 @@ from app.types import StrDict
 router = APIRouter()
 
 
-@router.get(path="/health")
+@router.get(path='/health')
 def health() -> StrDict:
-    # check database
+    # check database with exception
     with db.connect() as conn:
 
-        conn.execute(sqlalchemy.text("SELECT 1 = 1;"))
+        conn.execute(sqlalchemy.text('SELECT 1 = 1;'))
 
-    return {"status": "alive"}
+    return {'status': 'alive'}

@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "recommendation_service"
+name = "fastapi template"
 version = "0.1.0"
 description = ""
 authors = []
@@ -21,39 +21,96 @@ celery = {extras = ["pytest"], version = "^5.2.6"}
 redis = "^4.3.1"
 sentry-sdk = "^1.12.0"
 
-[tool.poetry.dev-dependencies]
-pip-tools = "^6.5.1"
-alembic = "^1.7.7"
-black = "^22.3.0"
-flake8 = "^6.0.0"
-autoflake = "^2.0.0"
-mypy = "^0.942"
-isort = "^5.10.1"
+[tool.poetry.group.test.dependencies]
 pytest = "^7.1.1"
 pydantic-factories = "^1.4.0"
 coverage = "^6.4.1"
+pytest-xdist = "^3.3.1"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.3.3"
+alembic = "^1.7.7"
+ruff = "^0.0.274"
+black = "^22.3.0"
+isort = "^5.10.1"
 
 [tool.black]
 line-length = 120
 target-version = ['py310']
+exclude = ['migrations']
+
 
 [tool.isort]
 profile = "black"
+skip = ['migrations']
 
-[tool.mypy]
-exclude = 'app/migrations'
-strict = true
-# disable strict flags
-ignore_missing_imports = true
-disallow_subclassing_any = false
-warn_return_any = false
-ignore_errors = true
 
+[tool.ruff]
+target-version = "py310"
+fix = false
+line-length = 120
+select = [
+    "F",   # pyflakes
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "UP",  # pyupgrade
+    "C90", # mccabe
+    "N",   # pep8-naming
+    "DJ",  # flake8-django
+    "C4",  # flake8-comprehensions
+    "B",   # flake8-bugbear
+    "BLE", # flake8-blind-except
+    "T20", # flake8-print
+    "Q",   # flake8-quotes
+    "ANN", # flake8-annotations
+    "PIE", # flake8-pie
+    "PT",  # flake8-pytest-style
+    "SIM", # flake8-simplify
+]
+
+ignore = [
+    "UP007",
+    "PT001",
+    "PT009",
+    "PT023",
+    "ANN002",
+    "ANN102",
+    "ANN003",
+    "ANN101",
+    "C408",
+]
+
+exclude = [
+    "eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".tox",
+    ".venv",
+    ".pyc",
+    ".pyi",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "migrations",
+]
+
+
+[tool.ruff.flake8-quotes]
+inline-quotes = "single"
+
+
+[tool.ruff.mccabe]
+max-complexity = 10
+
+
+[tool.pytest.ini_options]
+python_files = "test_*.py"
+# addopts = "--junitxml=artifacts/xunit.xml -n 0"
 
 [tool.coverage.report]
 omit = [
     "*/tests/*",
 ]
-
-[tool.autoflake]
-exclude = ["*migrations"]
