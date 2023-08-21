@@ -1,6 +1,6 @@
 import logging
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Any, Iterator
 
 import sentry_sdk
 from sentry_sdk.integrations.celery import CeleryIntegration
@@ -32,7 +32,7 @@ def set_attachment(key: str, value: bytes) -> None:
     return sentry_sdk.Hub.current.scope.add_attachment(bytes=value, filename=key)
 
 
-def set_context(key: str, value: Any) -> None:
+def set_context(key: str, value: dict) -> None:
     """Add large value to sentry context"""
     return sentry_sdk.set_context(key=key, value=value)
 

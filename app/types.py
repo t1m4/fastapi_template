@@ -1,3 +1,3 @@
-from typing import Any, Dict
+from typing import Any
 
-StrDict = Dict[str, Any]
+StrDict = dict[str, Any]

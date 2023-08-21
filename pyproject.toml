@@ -8,24 +8,28 @@ authors = []
 # WARN: keep python version in sync with python version in Dockerfile
 python = "^3.10"
 uvicorn = {extras = ["standard"], version = "^0.17.6"}
-fastapi = "^0.75.1"
-pydantic = {extras = ["dotenv"], version = "^1.9.0"}
-SQLAlchemy = "^1.4.34"
-psycopg2-binary = "^2.9.3"
+fastapi = "^0.101.0"
+pydantic = {extras = ["dotenv", "email"], version = "^1.9.0"}
+sqlalchemy = "^2.0.11"
 kafka-python = "^2.0.2"
 PyJWT = "^2.3.0"
-requests = "^2.27.1"
 typer = {extras = ["all"], version = "^0.6.1"}
 watchfiles = "^0.13"
 celery = {extras = ["pytest"], version = "^5.2.6"}
 redis = "^4.3.1"
 sentry-sdk = "^1.12.0"
+dependency-injector = "^4.41.0"
+psycopg = "^3.1.10"
+psycopg-binary = "^3.1.10"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.1.1"
-pydantic-factories = "^1.4.0"
 coverage = "^6.4.1"
 pytest-xdist = "^3.3.1"
+polyfactory = "^2.7.2"
+pytest-asyncio = "^0.21.1"
+gevent = "^23.7.0"
+httpx = "^0.24.1"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.3.3"
@@ -38,6 +42,7 @@ isort = "^5.10.1"
 line-length = 120
 target-version = ['py310']
 exclude = ['migrations']
+skip-string-normalization = true
 
 
 [tool.isort]
@@ -78,6 +83,7 @@ ignore = [
     "ANN003",
     "ANN101",
     "C408",
+    "B008",
 ]
 
 exclude = [
@@ -108,9 +114,11 @@ max-complexity = 10
 
 [tool.pytest.ini_options]
 python_files = "test_*.py"
-# addopts = "--junitxml=artifacts/xunit.xml -n 0"
+asyncio_mode = "auto"
 
 [tool.coverage.report]
 omit = [
     "*/tests/*",
 ]
+[tool.coverage.run]
+concurrency = ["thread", "gevent"]

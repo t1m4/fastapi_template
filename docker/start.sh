@@ -1,6 +1,5 @@
 #!/bin/bash
 
-bash docker/init.sh
 if [[ $ENVIRONMENT == "local" ]]; then
     exec uvicorn --factory app.main:create_app --host 0.0.0.0 --port 8000 --reload
 else

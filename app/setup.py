@@ -1,18 +1,26 @@
 import logging
 
-from fastapi import APIRouter, FastAPI
+from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse, Response
 
 from app import reporting
-from app.config import config
-from app.errors import BaseError
-from app.health import handlers as health
-from app.users import handlers as users
+from app.api.api import router
+from app.config import settings
+from app.exceptions.errors import BaseError
 
 
 def setup_logging() -> None:
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=settings.LOG_LEVEL)
+
+    modules = [{'name': 'uvicorn', 'level': settings.LOG_LEVEL}, {'name': 'tests', 'level': logging.INFO}]
+    for module in modules:
+        logger = logging.getLogger(module['name'])
+        logger.setLevel(module['level'])
+        log_formatter = logging.Formatter(fmt='%(asctime)s [%(levelname)s] ' + ' %(module)s - %(name)s: %(message)s')
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(log_formatter)
+        logger.addHandler(console_handler)
 
 
 def setup_error_handler(app: FastAPI) -> None:
@@ -20,16 +28,13 @@ def setup_error_handler(app: FastAPI) -> None:
     async def exception_handler(_: Request, exc: BaseError) -> Response:
         return JSONResponse(
             status_code=exc.http_status,
-            content={"message": exc.message},
+            content={'message': exc.message},
         )
 
 
 def setup_routes(app: FastAPI) -> None:
-    api = APIRouter(prefix=config.BASE_API_PATH)
-    api.include_router(health.router)
-    api.include_router(users.router)
-    app.include_router(api)
+    app.include_router(router)
 
 
 def setup_error_reporting() -> None:
-    reporting.init(dsn=config.SENTRY_DSN, environment=config.ENVIRONMENT)
+    reporting.init(dsn=settings.SENTRY_DSN, environment=settings.ENVIRONMENT)

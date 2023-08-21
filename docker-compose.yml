@@ -3,90 +3,74 @@ version: "3.9"
 
 services:
 
-  _base: &base
-    build:
-      context: .
-      dockerfile: Dockerfile
-    entrypoint: []
+  db:
+    image: postgres:15.2
+    ports:
+      - "5433:5432"
+    env_file:
+      - .env
+    command: ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"]
     volumes:
-      - .:/code
-    environment: &base-environment
-      ENVIRONMENT: local
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/dev
-      REDIS_URL: redis://redis:6379/1
+      - ./dbdata:/var/lib/postgresql/data:cached
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6380:6379"
 
   app: &app
-    <<: *base
+    build:
+      context: .
+      target: app
     ports:
-      - "8009:8009"
+      - "8000:8000"
+    volumes:
+      - ./app:/home/appuser/src/app
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: db
+      REDIS_HOST: redis
     entrypoint: ['docker/start.sh']
     depends_on:
       - db
       - redis
 
-  db:
-    image: postgres:11-alpine
-    ports:
-      - "6544:6543"
-    environment: &db-environment
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: dev
-      POSTGRES_PORT: 5432
+  migrations:
+    build:
+      context: .
+      target: migrations
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: db
     volumes:
-      - pgdata:/var/lib/postgresql/data
-
-  redis:
-    image: redis:alpine
-    ports:
-      - "6379:6379"
+      - ./app:/home/appuser/src/app
+      - ./migrations:/home/appuser/src/migrations
 
   worker:
-    <<: *base
+    <<: *app
     entrypoint: [ "docker/worker.sh" ]
+    ports: []
+
+  test:
+    build:
+      context: .
+      target: test
     depends_on:
       - db
-      - redis
-
-  test: &test
-    <<: *base
+    env_file:
+      - .env
     environment:
-      <<: *base-environment
-      DATABASE_URL: postgresql://postgres:postgres@db-test:5432/dev
-    entrypoint: ["docker/test.sh"]
-    depends_on:
-      - db-test
-  db-test:
-    image: postgres:11-alpine
-    ports:
-      - "5433:5432"
-    environment:
-      <<: *db-environment
-
-  alembic:
-    <<: *base
-    depends_on:
-      - db
-    entrypoint: ["alembic"]
-
-  alembic-autogenerate:
-    <<: *base
-    depends_on:
-      - db
-    entrypoint: ["alembic", "revision", "--autogenerate", "-m"]
-
-  poetry:
-    <<: *base
-    entrypoint: ["poetry"]
-
-  lint:
-    <<: *base
-    entrypoint: ["docker/lint.sh"]
-
-  lint-check:
-    <<: *base
-    entrypoint: [ "docker/lint_check.sh" ]
-
+      POSTGRES_HOST: db
+    volumes:
+      - ./tests:/home/appuser/src/tests
+      - ./app:/home/appuser/src/app
+      - ./docker:/home/appuser/src/docker
+      - ./artifacts:/home/appuser/src/artifacts/
+      - ./pyproject.toml:/home/appuser/src/pyproject.toml
 
 volumes:
-  pgdata:
+  dbdata:

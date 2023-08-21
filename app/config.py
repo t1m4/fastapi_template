@@ -1,12 +1,14 @@
 from typing import Any
 
 from pydantic import BaseSettings, Field, PostgresDsn, RedisDsn, validator
+from pydantic.fields import ModelField
 
 
 class Config(BaseSettings):
     APP_TITLE: str = Field('template')
+    DEBUG: bool = False
+    LOG_LEVEL: str = Field(...)
     ENVIRONMENT: str = Field(...)
-    BASE_API_PATH: str = '/api'
 
     POSTGRES_HOST: str = Field(...)
     POSTGRES_PORT: str = Field(...)
@@ -23,11 +25,13 @@ class Config(BaseSettings):
     SENTRY_DSN: str | None = Field(None)
 
     @validator('DATABASE_URL', pre=True)
-    def build_database_url(self, database_url: str | None, values: dict[str, Any]) -> str:
-        if isinstance(database_url, str):
-            return database_url
+    def build_database_url(
+        cls, value: str | None, values: dict[str, Any], config: BaseSettings, field: ModelField  # noqa: N805
+    ) -> str:
+        if isinstance(value, str):
+            return value
         return PostgresDsn.build(
-            scheme='postgresql',
+            scheme='postgresql+psycopg',
             user=values.get('POSTGRES_USER'),
             password=values.get('POSTGRES_PASSWORD'),
             host=values.get('POSTGRES_HOST'),
@@ -36,9 +40,11 @@ class Config(BaseSettings):
         )
 
     @validator('REDIS_URL', pre=True)
-    def build_redis_url(self, redis_url: str | None, values: dict[str, Any]) -> str:
-        if isinstance(redis_url, str):
-            return redis_url
+    def build_redis_url(
+        cls, value: str | None, values: dict[str, Any], config: BaseSettings, field: ModelField  # noqa: N805
+    ) -> str:
+        if isinstance(value, str):
+            return value
         return RedisDsn.build(
             scheme='redis',
             host=values.get('REDIS_HOST'),
@@ -47,4 +53,4 @@ class Config(BaseSettings):
         )
 
 
-config = Config(_env_file='.env', _env_file_encoding='utf-8')
+settings = Config(_env_file='.env', _env_file_encoding='utf-8')
